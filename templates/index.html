@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Downloader</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #0f1115;
+        color: #e8e8e8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+    }
+    .card {
+        background: #181b21;
+        border-radius: 14px;
+        padding: 40px;
+        width: 100%;
+        max-width: 460px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    h1 {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+    p.subtitle {
+        color: #8a8f98;
+        margin-top: 0;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid #2b2f38;
+        background: #0f1115;
+        color: #e8e8e8;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+    input[type="text"]:focus { outline: 2px solid #4f7cff; }
+    .radio-group {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    button {
+        width: 100%;
+        padding: 13px;
+        border: none;
+        border-radius: 8px;
+        background: #4f7cff;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    button:hover { background: #3d68e6; }
+    button:disabled { background: #2b2f38; cursor: not-allowed; }
+    .flash {
+        background: #3a1f1f;
+        border: 1px solid #7a3a3a;
+        color: #ffb3b3;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+    .platforms {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 12px;
+        color: #8a8f98;
+    }
+    .badge {
+        background: #232730;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    #status {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #8a8f98;
+        text-align: center;
+        display: none;
+    }
+</style>
+</head>
+<body>
+<div class="card">
+    <h1>Video Downloader</h1>
+    <p class="subtitle">Paste a link to download video or audio.</p>
+
+    <div class="platforms">
+        <span class="badge">YouTube</span>
+        <span class="badge">Facebook</span>
+        <span class="badge">Instagram</span>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="flash">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="downloadForm" method="POST" action="/download">
+        <input type="text" name="url" placeholder="Paste video link here..." required>
+
+        <div class="radio-group">
+            <label><input type="radio" name="media_type" value="video" checked> Video (MP4)</label>
+            <label><input type="radio" name="media_type" value="audio"> Audio only (MP3)</label>
+        </div>
+
+        <button type="submit" id="submitBtn">Download</button>
+        <div id="status">Downloading... this may take a while for long videos.</div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('downloadForm').addEventListener('submit', function () {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').innerText = 'Downloading...';
+        document.getElementById('status').style.display = 'block';
+    });
+</script>
+</body>
+</html>
