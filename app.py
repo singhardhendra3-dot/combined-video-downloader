@@ -18,7 +18,7 @@ from flask import Flask, render_template, request, send_file, flash, redirect, u
 import yt_dlp
 
 app = Flask(__name__)
-app.secret_key = "dev-secret-key-change-if-needed"  # only used for flash messages
+   app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-if-needed")  # only used for flash messages
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
@@ -132,4 +132,4 @@ def download():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
