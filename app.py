@@ -77,10 +77,10 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/download", methods=["POST"])
+@app.route("/download", methods=["GET", "POST"])
 def download():
-    url = request.form.get("url", "").strip()
-    media_type = request.form.get("media_type", "video")
+    url = request.values.get("url", "").strip()
+    media_type = request.values.get("media_type", "video")
 
     if not url:
         flash("Please paste a video link.")
