@@ -98,6 +98,14 @@
         display: none;
     }
 </style>
+   <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#d32f2f">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+</script>
 </head>
 <body>
 <div class="card">
