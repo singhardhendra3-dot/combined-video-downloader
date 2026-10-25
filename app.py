@@ -16,6 +16,10 @@ from urllib.parse import urlparse
 
 from flask import Flask, render_template, request, send_file, flash, redirect, url_for, after_this_request
 import yt_dlp
+import struct
+import zlib
+from functools import lru_cache
+from flask import Response, jsonify
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-if-needed")  # only used for flash messages
@@ -130,6 +134,58 @@ def download():
 
     return send_file(filepath, as_attachment=True, download_name=filename)
 
+@lru_cache(maxsize=None)
+def make_icon(size):
+    bg, fg = (211, 47, 47), (255, 255, 255)
+    rows = []
+    for y in range(size):
+        row = bytearray([0])
+        for x in range(size):
+            u, v = x / size, y / size
+            stem = 0.42 <= u <= 0.58 and 0.22 <= v <= 0.58
+            head = 0.58 <= v <= 0.78 and abs(u - 0.5) <= (0.78 - v) * 1.1
+            base = 0.22 <= u <= 0.78 and 0.82 <= v <= 0.88
+            row += bytes(fg if (stem or head or base) else bg)
+        rows.append(bytes(row))
+    raw = b"".join(rows)
 
+    def chunk(t, d):
+        c = struct.pack(">I", len(d)) + t + d
+        return c + struct.pack(">I", zlib.crc32(t + d) & 0xffffffff)
+
+    return (b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9))
+            + chunk(b"IEND", b""))
+
+
+@app.route("/icon-<int:size>.png")
+def icon(size):
+    if size not in (192, 512):
+        return "", 404
+    return Response(make_icon(size), mimetype="image/png")
+
+
+@app.route("/manifest.json")
+def manifest():
+    return jsonify({
+        "name": "Video Downloader",
+        "short_name": "Downloader",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#d32f2f",
+        "icons": [
+            {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+            {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+        ],
+    })
+
+
+@app.route("/sw.js")
+def service_worker():
+    return Response("self.addEventListener('fetch', () => {});",
+                    mimetype="application/javascript")
 if __name__ == "__main__":
     app.run(debug=False, port=5000)
